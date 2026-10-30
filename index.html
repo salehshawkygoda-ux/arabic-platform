@@ -7104,16 +7104,22 @@ topbar = function () { const t = _topbar_q.apply(this, arguments); return S && !
 /* supervisor: fresh numbers every minute, and on every tab change */
 let ADM_TIMER = null, ADM_AT = 0;
 const _viewAdmin_q = viewAdmin;
+/* refresh only the exact screen that was drawn: if the supervisor has opened a student, a form or another page, leave it alone */
+let ADM_SEQ = 0;
+const admMark = () => { const d = $('.dash'); if (d) d.dataset.av = String(++ADM_SEQ); };
+const admSame = () => { const d = $('.dash'); return !!d && d.dataset.av === String(ADM_SEQ); };
 viewAdmin = function () {
   const r = _viewAdmin_q.apply(this, arguments);
+  admMark();
   clearInterval(ADM_TIMER);
   ADM_TIMER = setInterval(async () => {
-    if (!A || !A.apass || A.offline || !$('.dash')) return;
+    if (!A || !A.apass || A.offline || !admSame()) return;
     if (document.visibilityState === 'hidden' || ['overview', 'students'].indexOf(A.tab) < 0) return;
     const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
-    try { await reloadAdmin(); ADM_AT = Date.now(); if (A && ['overview', 'students'].indexOf(A.tab) >= 0 && $('.dash')) { const y = window.scrollY; _viewAdmin_q(); window.scrollTo(0, y); } } catch (e) { }
+    const seq = ADM_SEQ;
+    try { await reloadAdmin(); ADM_AT = Date.now(); if (A && seq === ADM_SEQ && admSame() && ['overview', 'students'].indexOf(A.tab) >= 0) { const y = window.scrollY; _viewAdmin_q(); admMark(); window.scrollTo(0, y); } } catch (e) { }
   }, 60000);
-  if (A && !A.offline && Date.now() - ADM_AT > 60000 && ['overview', 'students'].indexOf(A.tab) >= 0) { ADM_AT = Date.now(); reloadAdmin().then(() => { if (A && $('.dash') && ['overview', 'students'].indexOf(A.tab) >= 0) { const y = window.scrollY; _viewAdmin_q(); window.scrollTo(0, y); } }).catch(() => { }); }
+  if (A && !A.offline && Date.now() - ADM_AT > 60000 && ['overview', 'students'].indexOf(A.tab) >= 0) { ADM_AT = Date.now(); const seq = ADM_SEQ; reloadAdmin().then(() => { if (A && seq === ADM_SEQ && admSame() && ['overview', 'students'].indexOf(A.tab) >= 0) { const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return; const y = window.scrollY; _viewAdmin_q(); admMark(); window.scrollTo(0, y); } }).catch(() => { }); }
   return r;
 };
 
