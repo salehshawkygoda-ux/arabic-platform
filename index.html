@@ -4147,9 +4147,9 @@ function filtered() {
 }
 function viewDash() {
   clearInterval(DASH_TIMER);
-  DASH_TIMER = setInterval(async () => { if (!T || !$('.dash')) return clearInterval(DASH_TIMER); if (T.tab !== 'live') return; await loadReport(); if ($('.dash')) viewDash(); }, 30000);
+  DASH_TIMER = setInterval(async () => { if (!T || !$('.tdash')) return clearInterval(DASH_TIMER); if (T.tab !== 'live') return; await loadReport(); if ($('.tdash') && T.tab === 'live') { const y = window.scrollY; viewDash(); window.scrollTo(0, y); } }, 30000);
   const rows = filtered(), online = T.rows.filter(r => minsAgo(r.lastActive) <= 5).length, f = T.filt;
-  const head = `<div class="wrap dash" style="padding:18px 16px 60px"><div class="dash-h"><h2>لَوْحَةُ الْمُعَلِّمِ <span class="en">Teacher dashboard – ${esc(T.name)}</span></h2>
+  const head = `<div class="wrap dash tdash" style="padding:18px 16px 60px"><div class="dash-h"><h2>لَوْحَةُ الْمُعَلِّمِ <span class="en">Teacher dashboard – ${esc(T.name)}</span></h2>
     <div class="row" style="gap:6px"><span class="pill">🟢 ${online} <span class="en">online now</span></span><span class="pill">👥 ${T.rows.length}</span><span class="muted" style="font-size:12px">⟳ ${T.at ? T.at.toLocaleTimeString('en-GB') : ''}</span>
     <button class="btn l" onclick="loadReport().then(viewDash)">⟳</button><button class="btn" onclick="exportExcel()">⬇ Excel</button>${T.role === 'admin' ? `<button class="btn l" onclick="viewAdmin()">🛡️ <span class="en">Admin</span></button>` : ''}<button class="btn l" onclick="T=null;viewLogin()">خُرُوجٌ</button></div></div>
     <div class="tabs wide">${dashTabs()}</div>
